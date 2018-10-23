@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-
 	"github.com/kshitij10496/hercules/common"
 )
 
@@ -35,7 +34,7 @@ func (sc *serviceCourse) handlerCourseTimetable(w http.ResponseWriter, r *http.R
 
 	fmt.Println("CODE:", courseCode)
 	course := common.Course{Code: courseCode}
-	timetable, err := getCourseTimetable(sc.DB, course)
+	timetable, err := sc.DB.GetCourseTimetable(course)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Fatal(err)
@@ -56,7 +55,7 @@ func (sc *serviceCourse) handlerCoursesFromDepartment(w http.ResponseWriter, r *
 	}
 
 	department := common.Department{Code: deptCode}
-	err := department.GetInfo(sc.DB)
+	err := sc.DB.GetDepartmentInfo(&department)
 	if err != nil {
 		// TODO: There could be 2 possible reasons for error here:
 		// 		1. Invalid Department code
@@ -66,7 +65,7 @@ func (sc *serviceCourse) handlerCoursesFromDepartment(w http.ResponseWriter, r *
 		return
 	}
 
-	courses, err := getCoursesFromDepartment(sc.DB, department)
+	courses, err := sc.DB.GetCoursesFromDepartment(department)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("Server Error: Cannot fetch courses for department: %+v, err: %v\n", department, err)
@@ -100,7 +99,7 @@ func (sc *serviceCourse) handlerCoursesFromFaculty(w http.ResponseWriter, r *htt
 		},
 	}
 
-	courses, err := getCoursesFromFaculty(sc.DB, facultyMember)
+	courses, err := sc.DB.GetCoursesFromFaculty(facultyMember)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Printf("Server Error: Cannot fetch courses for faculty: %+v, err: %v\n", facultyMember, err)
