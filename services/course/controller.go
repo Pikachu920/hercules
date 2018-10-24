@@ -1,7 +1,6 @@
 package course
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -30,14 +29,21 @@ func (sc *serviceCourse) handlerCourseTimetable(w http.ResponseWriter, r *http.R
 	if !found {
 		http.Error(w, "[required]: Course Code in URL Parameter", http.StatusBadRequest)
 		log.Println("Bad Request: No course code provided")
+		return
 	}
 
-	fmt.Println("CODE:", courseCode)
 	course := common.Course{Code: courseCode}
+	err := sc.DB.GetCourseInfo(&course)
+	if err != nil {
+		http.Error(w, "[invalid]: Invalid Department Code in URL Parameter", http.StatusBadRequest)
+		log.Println("Bad Request: Invalid department code provided", err)
+		return
+	}
+
 	timetable, err := sc.DB.GetCourseTimetable(course)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Fatal(err)
+		log.Println("Bad Request: Invalid course code provided", err)
 	}
 
 	common.RespondWithJSON(w, r, http.StatusOK, timetable)
